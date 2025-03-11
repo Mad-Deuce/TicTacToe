@@ -97,13 +97,14 @@ function setCell(x, y) {
     renderSign(x, y, currentPoint);
     let winStatus = checkWin(xField, oField);
 
-    if (winStatus != null) {
+    if (winStatus.length > 0) {
         renderWinLine(winStatus);
         message.innerHTML = currentPoint + ' Win!!!!';
         document.removeEventListener('click', handleClick);
         setTimeout(() => {
             init();
-        }, 2000)
+        }, 2000);
+        return;
     }
 
     if ((xField + oField) === 511) {
@@ -176,42 +177,45 @@ function renderWinLine(winStatus) {
     let endX;
     let endY;
 
-    if (winStatus.type === 'row') {
-        beginX = borderWidth + effectiveCellSize / 4;
-        endX = beginX + normal;
-        beginY = borderWidth + effectiveCellSize / 2 + (borderWidth + effectiveCellSize) * winStatus.num;
-        endY = beginY;
-    }
-
-    if (winStatus.type === 'col') {
-        beginY = borderWidth + effectiveCellSize / 4;
-        endY = beginY + normal;
-        beginX = borderWidth + effectiveCellSize / 2 + (borderWidth + effectiveCellSize) * winStatus.num;
-        endX = beginX;
-    }
-
-    if (winStatus.type === 'diag') {
-        beginX = borderWidth + effectiveCellSize / 4;
-        endX = beginX + normal;
-        beginY = borderWidth + effectiveCellSize / 4;
-        endY = beginY + normal;
-        if (winStatus.num) {
-            let temp = beginY;
-            beginY = endY;
-            endY = temp;
+    winStatus.forEach(item => {
+        if (item.type === 'row') {
+            beginX = borderWidth + effectiveCellSize / 4;
+            endX = beginX + normal;
+            beginY = borderWidth + effectiveCellSize / 2 + (borderWidth + effectiveCellSize) * item.num;
+            endY = beginY;
         }
-    }
 
-    ctx.lineWidth = config.winLineWidth;
-    ctx.beginPath();
-    ctx.moveTo(beginX, beginY);
-    ctx.lineTo(endX, endY);
-    ctx.strokeStyle = config.winLineColor;
-    ctx.stroke();
+        if (item.type === 'col') {
+            beginY = borderWidth + effectiveCellSize / 4;
+            endY = beginY + normal;
+            beginX = borderWidth + effectiveCellSize / 2 + (borderWidth + effectiveCellSize) * item.num;
+            endX = beginX;
+        }
+
+        if (item.type === 'diag') {
+            beginX = borderWidth + effectiveCellSize / 4;
+            endX = beginX + normal;
+            beginY = borderWidth + effectiveCellSize / 4;
+            endY = beginY + normal;
+            if (item.num) {
+                let temp = beginY;
+                beginY = endY;
+                endY = temp;
+            }
+        }
+
+        ctx.lineWidth = config.winLineWidth;
+        ctx.beginPath();
+        ctx.moveTo(beginX, beginY);
+        ctx.lineTo(endX, endY);
+        ctx.strokeStyle = config.winLineColor;
+        ctx.stroke();
+    })
+
 }
 
 function checkWin(xField, oField) {
-    let res = null;
+    let res = [];
     const winNums = {
         "7": { type: 'row', num: 0 },
         "56": { type: 'row', num: 1 },
@@ -225,7 +229,7 @@ function checkWin(xField, oField) {
     Object.keys(winNums).forEach(item => {
         let itemNum = Number.parseInt(item);
         if ((xField & itemNum) === itemNum || (oField & itemNum) === itemNum) {
-            res = winNums[item];
+            res.push(winNums[item]);
         };
     });
     return res;
