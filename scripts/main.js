@@ -7,7 +7,7 @@
 // 3. Если установка  крестика или нолика невозможна, показывать Алерт с ошибкой
 // 4. автоматически выявлять победителя, проводя линией по ряду, после сбросить канвас.
 
-
+const message = document.querySelector('#message');
 const canvas = document.querySelector('#canvas');
 let canvasWidth = canvas.clientWidth;
 const canvasHeight = canvas.clientHeight;
@@ -20,8 +20,9 @@ const config = {
     winLineWidth: 2,
     winLineColor: "red",
     signWidth: 5,
-    xColor: "black",
-    oColor: "black",
+    xColor: "green",
+    oColor: "blue",
+    fieldColor: 'pink'
 }
 
 let currentPoint;
@@ -31,10 +32,24 @@ let oField;
 init();
 
 function init() {
+    canvas.style.backgroundColor = config.fieldColor;
     xField = 0;
     oField = 0;
     currentPoint = 'X';
+    message.innerHTML = '';
     renderEmptyField();
+
+    document.addEventListener('click', handleClick);
+}
+
+
+function handleClick(event) {
+    event.preventDefault();
+    if (event.target != canvas) {
+        message.innerHTML = 'Out of field';
+        return;
+    };
+    setCell(event.offsetX, event.offsetY);
 }
 
 function renderEmptyField() {
@@ -58,18 +73,11 @@ function renderEmptyField() {
     };
 }
 
-document.addEventListener('click', (event) => {
-    event.preventDefault();
-    if (event.target != canvas) {
-        alert('out of field');
-        return;
-    }
-    setCell(event.offsetX, event.offsetY)
-});
+
 
 function setCell(x, y) {
     if (isClickOnBorder(x, y)) {
-        alert('click on Border');
+        message.innerHTML = 'Click on Border';
         return;
     }
     let step = canvas.clientHeight / 3;
@@ -79,27 +87,28 @@ function setCell(x, y) {
     let bitShift = colIndex + 3 * rowIndex;
     let num = 1 << bitShift
     if (num & xField || num & oField) {
-        console.log('cell is occupied');
+        message.innerHTML = 'Cell is occupied';
         return;
     }
-    if (currentPoint === 'X') {
-        xField = xField | num;
-    }
-    if (currentPoint === 'O') {
-        oField = oField | num;
-    }
+
+    currentPoint === 'X' && (xField = xField | num);
+    currentPoint === 'O' && (oField = oField | num);
 
     renderSign(x, y, currentPoint);
     let winStatus = checkWin(xField, oField);
 
     if (winStatus != null) {
         renderWinLine(winStatus);
+        message.innerHTML = currentPoint + ' Win!!!!';
+        document.removeEventListener('click', handleClick);
         setTimeout(() => {
             init();
         }, 2000)
     }
 
     if ((xField + oField) === 511) {
+        message.innerHTML = 'Dead Heat';
+        document.removeEventListener('click', handleClick);
         setTimeout(() => {
             init();
         }, 2000)
@@ -131,7 +140,7 @@ function renderSign(eventTargetX, eventTargetY, sign) {
     let borderWidth = config.borderWidth;
     let step = canvas.clientHeight / 3;
     let effectiveCellSize = (canvas.clientHeight - 4 * borderWidth) / 3;
-    let signSize = 0.8 * effectiveCellSize;
+    let signSize = 0.6 * effectiveCellSize;
 
     let x = Math.floor(eventTargetX / step) * (effectiveCellSize + borderWidth) + borderWidth + effectiveCellSize / 2 - signSize / 2;
     let y = Math.floor(eventTargetY / step) * (effectiveCellSize + borderWidth) + borderWidth + effectiveCellSize / 2 - signSize / 2;
@@ -214,10 +223,10 @@ function checkWin(xField, oField) {
         "273": { type: 'diag', num: 0 },
     };
     Object.keys(winNums).forEach(item => {
-        let itemNum = Number.parseInt(item)
+        let itemNum = Number.parseInt(item);
         if ((xField & itemNum) === itemNum || (oField & itemNum) === itemNum) {
             res = winNums[item];
-        }
+        };
     });
     return res;
 };

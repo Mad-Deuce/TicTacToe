@@ -4,14 +4,21 @@
 
 body {
   width: 100vw;
-  height:  100vh;
+  height: 100vh;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
 }
 
 canvas {
   border: solid 1px red;
+}
+
+p {
+  position: absolute;
+  top: 5%;
+  margin: 2rem;
 }
 
 /*# sourceMappingURL=style.css.map */
