@@ -1,0 +1,17 @@
+* {
+  margin: 0;
+}
+
+body {
+  width: 100vw;
+  height:  100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+canvas {
+  border: solid 1px red;
+}
+
+/*# sourceMappingURL=style.css.map */
